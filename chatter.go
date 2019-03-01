@@ -16,7 +16,7 @@
 // *NewChatter
 // *EndSession
 // *InitiateHandshake
-// *FinalizeHandshake
+// *ReturnHandshake
 // *FinalizeHandshake
 // *SendMessage
 // *ReceiveMessage

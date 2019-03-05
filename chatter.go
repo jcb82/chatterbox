@@ -96,11 +96,20 @@ type Message struct {
 // in an AEAD scheme. You should not need to modify this code.
 func (m *Message) EncodeAdditionalData() []byte {
 	buf := make([]byte, 8+3*FINGERPRINT_LENGTH)
+
 	binary.LittleEndian.PutUint32(buf, uint32(m.Counter))
 	binary.LittleEndian.PutUint32(buf[4:], uint32(m.LastUpdate))
-	copy(buf[8:], m.Sender.Fingerprint())
-	copy(buf[8+FINGERPRINT_LENGTH:], m.Receiver.Fingerprint())
-	copy(buf[8+2*FINGERPRINT_LENGTH:], m.NextDHRatchet.Fingerprint())
+
+	if m.Sender != nil {
+		copy(buf[8:], m.Sender.Fingerprint())
+	}
+	if m.Receiver != nil {
+		copy(buf[8+FINGERPRINT_LENGTH:], m.Receiver.Fingerprint())
+	}
+	if m.NextDHRatchet != nil {
+		copy(buf[8+2*FINGERPRINT_LENGTH:], m.NextDHRatchet.Fingerprint())
+	}
+
 	return buf
 }
 

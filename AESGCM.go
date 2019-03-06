@@ -114,6 +114,16 @@ func NewSymmetricKey() *SymmetricKey {
 
 // NewSymmetricKey creates a new, random initialization vector
 func NewIV() []byte {
+
+	// Use a fixed IV in test mode
+	if fixedRandomMode {
+		result := make([]byte, IV_LENGTH)
+		for i := 0; i < len(result); i++ {
+			result[i] = byte(i + 1)
+		}
+		return result
+	}
+
 	return RandomBytes(IV_LENGTH)
 }
 

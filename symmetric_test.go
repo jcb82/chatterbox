@@ -158,7 +158,7 @@ func TestVectorAESGCM(t *testing.T) {
 	iv := NewIV()
 	SetFixedRandomness(false)
 
-	expected, _ := hex.DecodeString("66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925")
+	expected, _ := hex.DecodeString("66687AADF862BD776C8FC18B8E9F8E20089714856EE233B3902A591D0D5F2925")
 	if !bytes.Equal(k1.Key, expected) {
 		t.Fatal("Key generation failed to match test vector")
 	}
@@ -166,19 +166,19 @@ func TestVectorAESGCM(t *testing.T) {
 	plaintext := "test"
 	data := []byte("extra")
 	ciphertext := k1.AuthenticatedEncrypt(plaintext, data, iv)
-	expected, _ = hex.DecodeString("8b200dee64be82e8a2e2fb8bb13b924b594e2510")
+	expected, _ = hex.DecodeString("D1D96BBF2413638BE50654B2CDA85252D8EC47E1")
 	if !bytes.Equal(ciphertext, expected) {
 		t.Fatal("Encryption failed to produce correct test vector")
 	}
 
 	k2 := k1.DeriveKey(0x11)
-	expected, _ = hex.DecodeString("1feffcd1ec39d618eaaff762a341b0658c4a08fd7b7be091cd821f3f57b3edc0")
+	expected, _ = hex.DecodeString("1FEFFCD1EC39D618EAAFF762A341B0658C4A08FD7B7BE091CD821F3F57B3EDC0")
 	if !bytes.Equal(k2.Key, expected) {
 		t.Fatal("Key derivation failed to match test vector")
 	}
 
 	k3 := CombineKeys(k1, k2)
-	expected, _ = hex.DecodeString("bd4ebcb9aea251a758ed77fe1e44b32193a741283d351825a2b0a155b85d36e4")
+	expected, _ = hex.DecodeString("BD4EBCB9AEA251A758ED77FE1E44B32193A741283D351825A2B0A155B85D36E4")
 	if !bytes.Equal(k3.Key, expected) {
 		t.Fatal("Key derivation failed to match test vector")
 	}

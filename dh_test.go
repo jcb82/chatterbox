@@ -80,18 +80,18 @@ func TestDHVectors(t *testing.T) {
 	kp2 := NewKeyPair()
 	SetFixedRandomness(false)
 
-	expected, _ := hex.DecodeString("662a7aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925")
+	expected, _ := hex.DecodeString("662A7AADF862BD776C8FC18B8E9F8E20089714856EE233B3902A591D0D5F2925")
 	if !bytes.Equal(kp1.PrivateKey.Key, expected) {
 		t.Fatal("Private key did not match expected test vector")
 	}
 
-	expected, _ = hex.DecodeString("7446cb2be09e4967e72b861eb81bc5af")
+	expected, _ = hex.DecodeString("7446CB2BE09E4967E72B861EB81BC5AF")
 	if !bytes.Equal(kp1.Fingerprint(), expected) {
 		t.Fatal("Fingerprint did not match expected test vector")
 	}
 
 	combined := DHCombine(&kp1.PublicKey, &kp2.PrivateKey)
-	expected, _ = hex.DecodeString("2c26cd031b4608e7fd36bc9b66c88a8d2ea0305677b74a85f0fa71b97411d459")
+	expected, _ = hex.DecodeString("2C26CD031B4608E7FD36BC9B66C88A8D2EA0305677B74A85F0FA71B97411D459")
 	if !bytes.Equal(combined.Key, expected) {
 		t.Fatal("DH combination did not match expected test vector")
 	}

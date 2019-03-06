@@ -56,7 +56,7 @@ func CheckTestVector(t *testing.T, value []byte, expectedHex, label string) {
 	expected, _ := hex.DecodeString(expectedHex)
 	if !bytes.Equal(value, expected) {
 		SetFixedRandomness(false)
-		t.Logf("%s did not match expext test vector", label)
+		t.Logf("%s did not match expected test vector", label)
 		t.Logf("Wanted: %0X", expected)
 		t.Logf("Got: %0X", value)
 		t.Fatal("Test vector failure")
@@ -396,8 +396,8 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "EF8D206106A74C26DBC3EB4F8679D3DB", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "EF3CB3ADF0E7898C1DE9E08149CE3F5AB9F4CE59052C", "Ciphertext")
-	CheckTestVector(t, message.IV, "4391A5C79FFDC79883036503", "IV")
+	CheckTestVector(t, message.Ciphertext, "52D0A0679552808A67C2C5F13A6607CBBFC3FEA30B28", "Ciphertext")
+	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
 
 	if err := CheckReceive(t, alice, message, "Alice?"); err != nil {
 		SetFixedRandomness(false)
@@ -416,8 +416,8 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "9CF8ED4A3591288D87E055AD722695058F34EA75E248", "Ciphertext")
-	CheckTestVector(t, message.IV, "CA551673C09DEEC28DF432A8", "IV")
+	CheckTestVector(t, message.Ciphertext, "D338E92B04DAA4F6C25F6AE3952A8EBB46BF29DE9CDB", "Ciphertext")
+	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
 
 	if err := CheckReceive(t, bob, message, "Bob..."); err != nil {
 		SetFixedRandomness(false)
@@ -463,11 +463,11 @@ func TestSynchronousChatVector(t *testing.T) {
 	// Check final message after extended conversation
 	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
 	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
-	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "7F2A3C8C2F81F0831F7385649B0448C1", "NextDHRatchet")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "34FAB4CF6AE3CFB23A9AF2C0ECE3C4E2", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "04", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "8248CC8F2683B8C7E5C7F95EC359E1140DD410ABCE08A29BDFB853", "Ciphertext")
-	CheckTestVector(t, message.IV, "97ECF048134E7F38EC73EE00", "IV")
+	CheckTestVector(t, message.Ciphertext, "8E3E9C653B7DF0CA5613F4DB3ADC895FEA6CEDFDA4C7E3CD31070A", "Ciphertext")
+	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
 }
 
 // TestTeardown tests that a session can be ended by calling

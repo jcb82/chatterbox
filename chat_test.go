@@ -50,6 +50,19 @@ func FailOnError(t *testing.T, err error) {
 	}
 }
 
+// CheckTestVector checks the a value matches an expeted test vector.
+// If it does not, fixed randomness mode is set to false and the test fails.
+func CheckTestVector(t *testing.T, value []byte, expectedHex, label string) {
+	expected, _ := hex.DecodeString(expectedHex)
+	if !bytes.Equal(value, expected) {
+		SetFixedRandomness(false)
+		t.Logf("%s did not match expext test vector", label)
+		t.Logf("Wanted: %0X", expected)
+		t.Logf("Got: %0X", value)
+		t.Fatal("Test vector failure")
+	}
+}
+
 // TestConstructor tests that the constructor can run without error.
 func TestConstructor(t *testing.T) {
 
@@ -139,11 +152,7 @@ func TestHandshakeVector(t *testing.T) {
 	_, bobCheck, _ := bob.ReturnHandshake(&alice.Identity.PublicKey, aliceShare)
 	SetFixedRandomness(false)
 
-	expected, _ := hex.DecodeString("a72eb9d3d4ef6daf82b44d1d4f44700226aa37437887922edd2c55682221d2ba-")
-
-	if !bytes.Equal(bobCheck.Key, expected) {
-		t.Fatal("Handshake check value did not match test vector")
-	}
+	CheckTestVector(t, bobCheck.Key, "A72EB9D3D4EF6DAF82B44D1D4F44700226AA37437887922EDD2C55682221D2BA", "Handshake check")
 }
 
 // CheckSend creates a message from sender to receiver by calling SendMessage
@@ -316,8 +325,8 @@ func TestAlternatingChat(t *testing.T) {
 	}
 
 	FailOnError(t, CheckSendReceive(t, alice, bob, "Roberto!"))
-	FailOnError(t, CheckSendReceive(t, bob, alice, "Alicia?"))
-	FailOnError(t, CheckSendReceive(t, alice, bob, "que pasa?"))
+	FailOnError(t, CheckSendReceive(t, bob, alice, "Alicia"))
+	FailOnError(t, CheckSendReceive(t, alice, bob, "¿qué pasa?"))
 	FailOnError(t, CheckSendReceive(t, bob, alice, "nada"))
 	FailOnError(t, CheckSendReceive(t, alice, bob, "😴"))
 	FailOnError(t, CheckSendReceive(t, bob, alice, "jajaja"))
@@ -349,8 +358,6 @@ func TestSynchronousChat(t *testing.T) {
 	FailOnError(t, CheckSendReceive(t, bob, alice, "Attack, Kenobi."))
 	FailOnError(t, CheckSendReceive(t, alice, bob, "You forget I trained the Jedi that defeated Count Dooku!"))
 	FailOnError(t, CheckSendReceive(t, alice, bob, "I may not defeat your droids, but my troops certainly will."))
-	FailOnError(t, CheckSendReceive(t, bob, alice, "Attack, Kenobi."))
-	FailOnError(t, CheckSendReceive(t, alice, bob, "I may not defeat your droids, but my troops certainly will."))
 	FailOnError(t, CheckSendReceive(t, bob, alice, "Army or not, you must realize you are doomed."))
 	FailOnError(t, CheckSendReceive(t, alice, bob, "I don't think so."))
 }
@@ -376,14 +383,47 @@ func TestSynchronousChatVector(t *testing.T) {
 
 	FailOnError(t, DoHandshake(t, alice, bob))
 	seenError := false
-	FailOnError(t, CheckSendReceive(t, alice, bob, "Bob..."))
 
-	if err := CheckSendReceive(t, alice, bob, "Bob!"); err != nil {
-		seenError = true
+	//Check first message
+	message, err := CheckSend(t, bob, alice, "Alice?")
+	if err != nil {
+		SetFixedRandomness(false)
+		t.Skip("Message not sent correctly")
 	}
-	if err := CheckSendReceive(t, bob, alice, "Alice!"); err != nil {
-		seenError = true
+
+	CheckTestVector(t, message.Sender.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Sender")
+	CheckTestVector(t, message.Receiver.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Receiver")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "EF8D206106A74C26DBC3EB4F8679D3DB", "NextDHRatchet")
+	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
+	CheckTestVector(t, message.Ciphertext, "EF3CB3ADF0E7898C1DE9E08149CE3F5AB9F4CE59052C", "Ciphertext")
+	CheckTestVector(t, message.IV, "4391A5C79FFDC79883036503", "IV")
+
+	if err := CheckReceive(t, alice, message, "Alice?"); err != nil {
+		SetFixedRandomness(false)
+		t.Skip("Message not received correctly")
 	}
+
+	//Check second message
+	message, err = CheckSend(t, alice, bob, "Bob...")
+	if err != nil {
+		SetFixedRandomness(false)
+		t.Skip("Message not sent correctly")
+	}
+
+	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
+	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
+	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
+	CheckTestVector(t, message.Ciphertext, "9CF8ED4A3591288D87E055AD722695058F34EA75E248", "Ciphertext")
+	CheckTestVector(t, message.IV, "CA551673C09DEEC28DF432A8", "IV")
+
+	if err := CheckReceive(t, bob, message, "Bob..."); err != nil {
+		SetFixedRandomness(false)
+		t.Skip("Message not received correctly")
+	}
+
 	if err := CheckSendReceive(t, bob, alice, "Alice!!"); err != nil {
 		seenError = true
 	}
@@ -393,7 +433,6 @@ func TestSynchronousChatVector(t *testing.T) {
 	if err := CheckSendReceive(t, bob, alice, "Alice!!!"); err != nil {
 		seenError = true
 	}
-
 	if err := CheckSendReceive(t, alice, bob, "Bob!"); err != nil {
 		seenError = true
 	}
@@ -415,15 +454,20 @@ func TestSynchronousChatVector(t *testing.T) {
 	if err := CheckSendReceive(t, alice, bob, "that's okay Bob"); err != nil {
 		seenError = true
 	}
-	message, err := CheckSend(t, alice, bob, "it happens!")
+	message, err = CheckSend(t, alice, bob, "it happens!")
 	SetFixedRandomness(false)
 	if seenError || err != nil {
 		t.Skip("Errors in communication")
 	}
-	expected, _ := hex.DecodeString("0def92031ae82c556cd6ab53b4e3803a925f3f4e5fbb26b55b1797")
-	if !bytes.Equal(message.Ciphertext, expected) {
-		t.Fatal("Ciphertext did not match expected test vector")
-	}
+
+	// Check final message after extended conversation
+	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
+	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "7F2A3C8C2F81F0831F7385649B0448C1", "NextDHRatchet")
+	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "04", "LastUpdate")
+	CheckTestVector(t, message.Ciphertext, "8248CC8F2683B8C7E5C7F95EC359E1140DD410ABCE08A29BDFB853", "Ciphertext")
+	CheckTestVector(t, message.IV, "97ECF048134E7F38EC73EE00", "IV")
 }
 
 // TestTeardown tests that a session can be ended by calling

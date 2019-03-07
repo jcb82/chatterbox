@@ -161,7 +161,7 @@ func (c *Chatter) InitiateHandshake(partnerIdentity *PublicKey) (*PublicKey, err
 // need to fill in the key derivation code. The partner which calls this
 // method is the responder.
 func (c *Chatter) ReturnHandshake(partnerIdentity,
-	partnerDHRatchet *PublicKey) (*PublicKey, *SymmetricKey, error) {
+	partnerEphemeral *PublicKey) (*PublicKey, *SymmetricKey, error) {
 
 	if _, exists := c.Sessions[*partnerIdentity]; exists {
 		return nil, nil, errors.New("Already have session open")
@@ -182,7 +182,7 @@ func (c *Chatter) ReturnHandshake(partnerIdentity,
 // need to fill in the key derivation code. The partner which calls this
 // method is the initiator.
 func (c *Chatter) FinalizeHandshake(partnerIdentity,
-	partnerDHRatchet *PublicKey) (*SymmetricKey, error) {
+	partnerEphemeral *PublicKey) (*SymmetricKey, error) {
 
 	if _, exists := c.Sessions[*partnerIdentity]; !exists {
 		return nil, errors.New("Can't finalize session, not yet open")

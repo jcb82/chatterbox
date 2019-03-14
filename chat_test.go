@@ -55,9 +55,8 @@ func FailOnError(t *testing.T, err error) {
 func CheckTestVector(t *testing.T, value []byte, expectedHex, label string) {
 	expected, _ := hex.DecodeString(expectedHex)
 	if !bytes.Equal(value, expected) {
-		SetFixedRandomness(false)
 		t.Logf("%s did not match expected test vector", label)
-		t.Logf("Wanted: %0X", expected)
+		t.Logf("Expected: %0X", expected)
 		t.Logf("Got: %0X", value)
 		t.Fatal("Test vector failure")
 	}
@@ -145,12 +144,13 @@ func TestHandshakeVector(t *testing.T) {
 	}
 
 	SetFixedRandomness(true)
+	defer SetFixedRandomness(false)
+
 	alice := NewChatter()
 	bob := NewChatter()
 
 	aliceShare, _ := alice.InitiateHandshake(&bob.Identity.PublicKey)
 	_, bobCheck, _ := bob.ReturnHandshake(&alice.Identity.PublicKey, aliceShare)
-	SetFixedRandomness(false)
 
 	CheckTestVector(t, bobCheck.Key, "A72EB9D3D4EF6DAF82B44D1D4F44700226AA37437887922EDD2C55682221D2BA", "Handshake check")
 }
@@ -378,18 +378,15 @@ func TestSynchronousChatVector(t *testing.T) {
 	}
 
 	SetFixedRandomness(true)
+	defer SetFixedRandomness(false)
 	alice = NewChatter()
 	bob = NewChatter()
 
 	FailOnError(t, DoHandshake(t, alice, bob))
-	seenError := false
 
 	//Check first message
 	message, err := CheckSend(t, bob, alice, "Alice?")
-	if err != nil {
-		SetFixedRandomness(false)
-		t.Skip("Message not sent correctly")
-	}
+	SkipOnError(t, err)
 
 	CheckTestVector(t, message.Sender.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Sender")
 	CheckTestVector(t, message.Receiver.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Receiver")
@@ -399,17 +396,11 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.Ciphertext, "52D0A0679552808A67C2C5F13A6607CBBFC3FEA30B28", "Ciphertext")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
 
-	if err := CheckReceive(t, alice, message, "Alice?"); err != nil {
-		SetFixedRandomness(false)
-		t.Skip("Message not received correctly")
-	}
+	SkipOnError(t, CheckReceive(t, alice, message, "Alice?"))
 
 	//Check second message
 	message, err = CheckSend(t, alice, bob, "Bob...")
-	if err != nil {
-		SetFixedRandomness(false)
-		t.Skip("Message not sent correctly")
-	}
+	SkipOnError(t, err)
 
 	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
 	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
@@ -419,46 +410,21 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.Ciphertext, "D338E92B04DAA4F6C25F6AE3952A8EBB46BF29DE9CDB", "Ciphertext")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
 
-	if err := CheckReceive(t, bob, message, "Bob..."); err != nil {
-		SetFixedRandomness(false)
-		t.Skip("Message not received correctly")
-	}
+	SkipOnError(t, CheckReceive(t, bob, message, "Bob..."))
 
-	if err := CheckSendReceive(t, bob, alice, "Alice!!"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, bob, alice, "Alice!!!"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, bob, alice, "Alice!!!"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, alice, bob, "Bob!"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, alice, bob, "I heard you the first time"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, alice, bob, "No need to repeat yourself..."); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, bob, alice, "Sorry Alice"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, bob, alice, "I got carried away"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, bob, alice, "won't happen again"); err != nil {
-		seenError = true
-	}
-	if err := CheckSendReceive(t, alice, bob, "that's okay Bob"); err != nil {
-		seenError = true
-	}
+	//Longer sequence, unchecked
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "Alice!!"))
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "Alice!!!"))
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "Alice!!!"))
+	SkipOnError(t, CheckSendReceive(t, alice, bob, "Bob!"))
+	SkipOnError(t, CheckSendReceive(t, alice, bob, "I heard you the first time"))
+	SkipOnError(t, CheckSendReceive(t, alice, bob, "No need to repeat yourself..."))
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "Sorry Alice"))
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "I got carried away"))
+	SkipOnError(t, CheckSendReceive(t, bob, alice, "won't happen again"))
+	SkipOnError(t, CheckSendReceive(t, alice, bob, "that's okay Bob"))
 	message, err = CheckSend(t, alice, bob, "it happens!")
-	SetFixedRandomness(false)
-	if seenError || err != nil {
-		t.Skip("Errors in communication")
-	}
+	SkipOnError(t, err)
 
 	// Check final message after extended conversation
 	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")

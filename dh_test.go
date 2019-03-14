@@ -76,9 +76,9 @@ func TestZeroizePrivateKey(t *testing.T) {
 func TestDHVectors(t *testing.T) {
 
 	SetFixedRandomness(true)
+	defer SetFixedRandomness(false)
 	kp1 := NewKeyPair()
 	kp2 := NewKeyPair()
-	SetFixedRandomness(false)
 
 	expected, _ := hex.DecodeString("662A7AADF862BD776C8FC18B8E9F8E20089714856EE233B3902A591D0D5F2925")
 	if !bytes.Equal(kp1.PrivateKey.Key, expected) {

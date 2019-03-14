@@ -154,9 +154,9 @@ func TestCombination(t *testing.T) {
 func TestVectorAESGCM(t *testing.T) {
 
 	SetFixedRandomness(true)
+	defer SetFixedRandomness(false)
 	k1 := NewSymmetricKey()
 	iv := NewIV()
-	SetFixedRandomness(false)
 
 	expected, _ := hex.DecodeString("66687AADF862BD776C8FC18B8E9F8E20089714856EE233B3902A591D0D5F2925")
 	if !bytes.Equal(k1.Key, expected) {

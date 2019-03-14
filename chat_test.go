@@ -294,6 +294,7 @@ func TestErrorRecovery(t *testing.T) {
 	}
 
 	message, err := CheckSend(t, alice, bob, "test")
+	SkipOnError(t, err)
 
 	message.Counter += 1
 	if _, err = bob.ReceiveMessage(message); err == nil {
@@ -307,7 +308,7 @@ func TestErrorRecovery(t *testing.T) {
 	}
 	message.Ciphertext[4] ^= 0x10
 
-	CheckReceive(t, bob, message, "test")
+	FailOnError(t, CheckReceive(t, bob, message, "test"))
 }
 
 // TestAlternatingChat tests a conversation where both parties

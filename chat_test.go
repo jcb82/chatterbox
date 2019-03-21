@@ -592,12 +592,9 @@ func DeliverQueuedMessage(t *testing.T,
 	return CheckReceive(t, c[*q[i].Receiver], q[i], "")
 }
 
-// TestAsynchronousChatExtended creates an array of EXTENDED_TEST_PARTICIPANTS
-// chatters. In each round, it then randomly either enqueues a sent message
-// from a random chatter to another, or picks a message from the queue
-// and delivers it. This runs for EXTENDED_TEST_ROUNDS. Errors are induced with
-// probability EXTENDED_TEST_ERROR_RATE, set this above zero to test error
-// recovery. If the setup fails, the test is skipped.
+// TestAsynchronousChat tests a short chat sequence between Alice and Bob with
+// many message delayed and delivered out of order. No delivery errors occur.
+// If the setup fails, the test is skipped.
 func TestAsynchronousChat(t *testing.T) {
 
 	alice := NewChatter()
@@ -639,6 +636,12 @@ func TestAsynchronousChat(t *testing.T) {
 	}
 }
 
+// TestAsynchronousChatExtended creates an array of EXTENDED_TEST_PARTICIPANTS
+// chatters. In each round, it then randomly either enqueues a sent message
+// from a random chatter to another, or picks a message from the queue
+// and delivers it. This runs for EXTENDED_TEST_ROUNDS. Errors are induced with
+// probability EXTENDED_TEST_ERROR_RATE, set this above zero to test error
+// recovery. If the setup fails, the test is skipped.
 func TestAsynchronousChatExtended(t *testing.T) {
 
 	if testing.Short() {

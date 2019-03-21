@@ -394,8 +394,8 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "EF8D206106A74C26DBC3EB4F8679D3DB", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "52D0A0679552808A67C2C5F13A6607CBBFC3FEA30B28", "Ciphertext")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
+	CheckTestVector(t, message.Ciphertext, "52D0A0679552808A67C2C5F13A6607CBBFC3FEA30B28", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, alice, message, "Alice?"))
 
@@ -408,8 +408,8 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "D338E92B04DAA4F6C25F6AE3952A8EBB46BF29DE9CDB", "Ciphertext")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
+	CheckTestVector(t, message.Ciphertext, "D338E92B04DAA4F6C25F6AE3952A8EBB46BF29DE9CDB", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, bob, message, "Bob..."))
 
@@ -433,8 +433,8 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "34FAB4CF6AE3CFB23A9AF2C0ECE3C4E2", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "04", "LastUpdate")
-	CheckTestVector(t, message.Ciphertext, "8E3E9C653B7DF0CA5613F4DB3ADC895FEA6CEDFDA4C7E3CD31070A", "Ciphertext")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
+	CheckTestVector(t, message.Ciphertext, "8E3E9C653B7DF0CA5613F4DB3ADC895FEA6CEDFDA4C7E3CD31070A", "Ciphertext")
 }
 
 // TestTeardown tests that a session can be ended by calling
@@ -633,6 +633,10 @@ func TestAsynchronousChat(t *testing.T) {
 	FailOnError(t, DeliverQueuedMessage(t, c, queue, 8, false))
 	FailOnError(t, DeliverQueuedMessage(t, c, queue, 2, false))
 	FailOnError(t, DeliverQueuedMessage(t, c, queue, 1, false))
+
+	if err := DeliverQueuedMessage(t, c, queue, 1, false); err == nil {
+		t.Fatal("Accepted replay of late message without error")
+	}
 }
 
 func TestAsynchronousChatExtended(t *testing.T) {

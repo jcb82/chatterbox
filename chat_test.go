@@ -607,31 +607,34 @@ func TestAsynchronousChat(t *testing.T) {
 		fmt.Printf("-------------------------------\n\n")
 	}
 
-	queue := make([]*Message, 9)
+	aliceQueue := make([]*Message, 5)
+	bobQueue := make([]*Message, 5)
 
 	c := make(map[PublicKey]*Chatter)
 	c[alice.Identity.PublicKey] = alice
 	c[bob.Identity.PublicKey] = bob
 
-	SendQueuedMessage(t, queue, 1, alice, bob, "1")
-	SendQueuedMessage(t, queue, 2, alice, bob, "2")
-	SendQueuedMessage(t, queue, 3, bob, alice, "3")
-	SendQueuedMessage(t, queue, 4, alice, bob, "4")
-	SendQueuedMessage(t, queue, 5, bob, alice, "5")
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 5, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 3, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 4, false))
-	SendQueuedMessage(t, queue, 6, bob, alice, "6")
-	SendQueuedMessage(t, queue, 7, bob, alice, "7")
-	SendQueuedMessage(t, queue, 8, alice, bob, "8")
+	SendQueuedMessage(t, bobQueue, 1, alice, bob, "AB.1")
+	SendQueuedMessage(t, bobQueue, 2, alice, bob, "AB.2")
+	SendQueuedMessage(t, bobQueue, 3, alice, bob, "AB.3")
+	SendQueuedMessage(t, aliceQueue, 1, bob, alice, "BA.1")
+	SendQueuedMessage(t, aliceQueue, 2, bob, alice, "BA.2")
 
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 7, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 6, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 8, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 2, false))
-	FailOnError(t, DeliverQueuedMessage(t, c, queue, 1, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, aliceQueue, 2, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, aliceQueue, 1, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 3, false))
 
-	if err := DeliverQueuedMessage(t, c, queue, 1, false); err == nil {
+	SendQueuedMessage(t, aliceQueue, 3, bob, alice, "BA.3")
+	SendQueuedMessage(t, aliceQueue, 4, bob, alice, "BA.4")
+	SendQueuedMessage(t, bobQueue, 4, alice, bob, "AB.4")
+
+	FailOnError(t, DeliverQueuedMessage(t, c, aliceQueue, 4, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, aliceQueue, 3, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 4, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 2, false))
+	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 1, false))
+
+	if err := DeliverQueuedMessage(t, c, aliceQueue, 1, false); err == nil {
 		t.Fatal("Accepted replay of late message without error")
 	}
 }

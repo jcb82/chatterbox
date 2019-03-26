@@ -634,7 +634,7 @@ func TestAsynchronousChat(t *testing.T) {
 	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 2, false))
 	FailOnError(t, DeliverQueuedMessage(t, c, bobQueue, 1, false))
 
-	if err := DeliverQueuedMessage(t, c, aliceQueue, 1, false); err == nil {
+	if _, err := bob.ReceiveMessage(bobQueue[1]); err == nil {
 		t.Fatal("Accepted replay of late message without error")
 	}
 }

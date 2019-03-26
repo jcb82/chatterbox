@@ -191,8 +191,8 @@ func CheckReceive(t *testing.T,
 
 	if VERBOSE {
 		fmt.Printf("0x%0X receiving message from 0x%0X, counter: %d, next share: %0X, ciphertext: %0X\n",
-			message.Sender.Fingerprint()[:HANDLE_LENGTH],
 			message.Receiver.Fingerprint()[:HANDLE_LENGTH],
+			message.Sender.Fingerprint()[:HANDLE_LENGTH],
 			message.Counter,
 			message.NextDHRatchet.Fingerprint(),
 			message.Ciphertext)

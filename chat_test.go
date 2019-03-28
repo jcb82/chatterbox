@@ -50,7 +50,7 @@ func FailOnError(t *testing.T, err error) {
 	}
 }
 
-// CheckTestVector checks the a value matches an expeted test vector.
+// CheckTestVector checks the a value matches an expected test vector.
 // If it does not, fixed randomness mode is set to false and the test fails.
 func CheckTestVector(t *testing.T, value []byte, expectedHex, label string) {
 	expected, _ := hex.DecodeString(expectedHex)
@@ -74,14 +74,21 @@ func TestConstructor(t *testing.T) {
 	NewChatter()
 }
 
+func PrintHandle(pk *PublicKey) string {
+	if pk != nil {
+		return fmt.Sprintf("%0X", pk.Fingerprint()[:HANDLE_LENGTH])
+	}
+	return "[nil]"
+}
+
 // DoHandshake executes the three-step handshake process.
 // It does not fail on an error, but returns it.
 func DoHandshake(t *testing.T, alice, bob *Chatter) error {
 
 	if VERBOSE {
 		fmt.Println("Starting handshake sequence")
-		fmt.Printf("Initiator identity: %X\n", alice.Identity.Fingerprint()[:HANDLE_LENGTH])
-		fmt.Printf("Responder identity: %X\n", bob.Identity.Fingerprint()[:HANDLE_LENGTH])
+		fmt.Printf("Initiator identity: %s\n", PrintHandle(&alice.Identity.PublicKey))
+		fmt.Printf("Responder identity: %s\n", PrintHandle(&bob.Identity.PublicKey))
 	}
 
 	aliceShare, err := alice.InitiateHandshake(&bob.Identity.PublicKey)
@@ -96,7 +103,7 @@ func DoHandshake(t *testing.T, alice, bob *Chatter) error {
 
 	bobShare, bobCheck, err := bob.ReturnHandshake(&alice.Identity.PublicKey, aliceShare)
 	if err != nil {
-		t.Logf("Error responding to hanshake")
+		t.Logf("Error responding to handshake")
 		return err
 	}
 	if VERBOSE {
@@ -162,19 +169,19 @@ func CheckSend(t *testing.T,
 	plaintext string) (*Message, error) {
 
 	if VERBOSE {
-		fmt.Printf("0x%0X attempting to send plaintext \"%s\" to 0x%0X\n",
-			sender.Identity.Fingerprint()[:HANDLE_LENGTH],
+		fmt.Printf("%s attempting to send plaintext \"%s\" to %s\n",
+			PrintHandle(&sender.Identity.PublicKey),
 			plaintext,
-			receiver.Identity.Fingerprint()[:HANDLE_LENGTH])
+			PrintHandle(&receiver.Identity.PublicKey))
 	}
 	message, err := sender.SendMessage(&receiver.Identity.PublicKey, plaintext)
 	if err != nil {
 		return nil, err
 	}
 	if VERBOSE {
-		fmt.Printf("Sent with counter: %d, next share: %0X, ciphertext: %0X\n",
+		fmt.Printf("Sent with counter: %d, next DH share: %s, ciphertext: %0X\n",
 			message.Counter,
-			message.NextDHRatchet.Fingerprint(),
+			PrintHandle(message.NextDHRatchet),
 			message.Ciphertext)
 	}
 
@@ -190,11 +197,11 @@ func CheckReceive(t *testing.T,
 	intendedPlaintext string) error {
 
 	if VERBOSE {
-		fmt.Printf("0x%0X receiving message from 0x%0X, counter: %d, next share: %0X, ciphertext: %0X\n",
-			message.Receiver.Fingerprint()[:HANDLE_LENGTH],
-			message.Sender.Fingerprint()[:HANDLE_LENGTH],
+		fmt.Printf("%s receiving message from %s, counter: %d, next DH share: %s, ciphertext: %0X\n",
+			PrintHandle(message.Receiver),
+			PrintHandle(message.Sender),
 			message.Counter,
-			message.NextDHRatchet.Fingerprint(),
+			PrintHandle(message.NextDHRatchet),
 			message.Ciphertext)
 	}
 	received, err := receiver.ReceiveMessage(message)
@@ -210,8 +217,8 @@ func CheckReceive(t *testing.T,
 		return err
 	}
 	if VERBOSE {
-		fmt.Printf("0x%0X decrypted plaintext \"%s\"\n",
-			receiver.Identity.Fingerprint()[:HANDLE_LENGTH],
+		fmt.Printf("%s decrypted plaintext \"%s\"\n",
+			PrintHandle(&receiver.Identity.PublicKey),
 			received)
 	}
 
@@ -389,8 +396,17 @@ func TestSynchronousChatVector(t *testing.T) {
 	message, err := CheckSend(t, bob, alice, "Alice?")
 	SkipOnError(t, err)
 
+	if message.Sender == nil {
+		t.Fatal("message.Sender not set")
+	}
 	CheckTestVector(t, message.Sender.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Sender")
+	if message.Receiver == nil {
+		t.Fatal("message.Receiver not set")
+	}
 	CheckTestVector(t, message.Receiver.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Receiver")
+	if message.NextDHRatchet == nil {
+		t.Fatal("message.NextDHRatchet not set")
+	}
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "EF8D206106A74C26DBC3EB4F8679D3DB", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
@@ -403,8 +419,17 @@ func TestSynchronousChatVector(t *testing.T) {
 	message, err = CheckSend(t, alice, bob, "Bob...")
 	SkipOnError(t, err)
 
+	if message.Sender == nil {
+		t.Fatal("message.Sender not set")
+	}
 	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
+	if message.Receiver == nil {
+		t.Fatal("message.Receiver not set")
+	}
 	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
+	if message.NextDHRatchet == nil {
+		t.Fatal("message.NextDHRatchet not set")
+	}
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
@@ -428,8 +453,17 @@ func TestSynchronousChatVector(t *testing.T) {
 	SkipOnError(t, err)
 
 	// Check final message after extended conversation
+	if message.Sender == nil {
+		t.Fatal("message.Sender not set")
+	}
 	CheckTestVector(t, message.Sender.Fingerprint(), "7446CB2BE09E4967E72B861EB81BC5AF", "Sender")
+	if message.Receiver == nil {
+		t.Fatal("message.Receiver not set")
+	}
 	CheckTestVector(t, message.Receiver.Fingerprint(), "83F257B18A903848BA6CDB628E7D925B", "Receiver")
+	if message.NextDHRatchet == nil {
+		t.Fatal("message.NextDHRatchet not set")
+	}
 	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "34FAB4CF6AE3CFB23A9AF2C0ECE3C4E2", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "04", "LastUpdate")
@@ -451,7 +485,7 @@ func TestTeardown(t *testing.T) {
 
 	FailOnError(t, alice.EndSession(&bob.Identity.PublicKey))
 	if _, err := CheckSend(t, alice, bob, "Ping?"); err == nil {
-		t.Fatal("Should not be able to send messages after ending sesion.")
+		t.Fatal("Should not be able to send messages after ending session.")
 	}
 	if _, err := CheckSend(t, bob, alice, "Ping?"); err != nil {
 		t.Fatal("Should be able to send messages to partner who has closed session.")
@@ -476,9 +510,9 @@ func SetupChatters(t *testing.T, n int) ([]*Chatter, error) {
 	for i := 0; i < len(chatters); i++ {
 		chatters[i] = NewChatter()
 		if VERBOSE {
-			fmt.Printf("Created new chatter #%d: %0X\n",
+			fmt.Printf("Created new chatter #%d: %s\n",
 				i,
-				chatters[i].Identity.Fingerprint()[:HANDLE_LENGTH])
+				PrintHandle(&chatters[i].Identity.PublicKey))
 		}
 	}
 
@@ -528,10 +562,10 @@ func TestSynchronousChatExtended(t *testing.T) {
 		}
 		m := fmt.Sprintf("M%d", i)
 		if VERBOSE {
-			fmt.Printf("Message \"%s\" to be delivered from 0x%0X to 0x%0X\n",
+			fmt.Printf("Message \"%s\" to be delivered from %s to %s\n",
 				m,
-				c1.Identity.Fingerprint()[:HANDLE_LENGTH],
-				c2.Identity.Fingerprint()[:HANDLE_LENGTH])
+				PrintHandle(&c1.Identity.PublicKey),
+				PrintHandle(&c2.Identity.PublicKey))
 		}
 
 		FailOnError(t, CheckSendReceive(t, c1, c2, m))
@@ -552,10 +586,10 @@ func SendQueuedMessage(t *testing.T,
 	}
 
 	if VERBOSE {
-		fmt.Printf("Message \"%s\" from 0x%0X to 0x%0X sent and added to queue\n",
+		fmt.Printf("Message \"%s\" from %s to %s sent and added to queue\n",
 			plaintext,
-			sender.Identity.Fingerprint()[:HANDLE_LENGTH],
-			receiver.Identity.Fingerprint()[:HANDLE_LENGTH])
+			PrintHandle(&sender.Identity.PublicKey),
+			PrintHandle(&receiver.Identity.PublicKey))
 	}
 
 	q[i] = message
@@ -571,10 +605,10 @@ func DeliverQueuedMessage(t *testing.T,
 	i int,
 	deliveryError bool) error {
 	if VERBOSE {
-		fmt.Printf("Message %d from 0x%0X delivered to 0x%0X\n",
+		fmt.Printf("Message %d from %s delivered to %s\n",
 			q[i].Counter,
-			q[i].Sender.Fingerprint()[:HANDLE_LENGTH],
-			q[i].Receiver.Fingerprint()[:HANDLE_LENGTH])
+			PrintHandle(q[i].Sender),
+			PrintHandle(q[i].Receiver))
 		if deliveryError {
 			fmt.Println("*******Delivery error induced*********")
 		}

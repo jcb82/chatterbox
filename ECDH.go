@@ -50,9 +50,9 @@ type PublicKey struct {
 	Y *big.Int
 }
 
-// NewKeyPair creates a new key pair. It panics in the case of
+// GenerateKeyPair creates a new key pair. It panics in the case of
 // randomness failure.
-func NewKeyPair() *KeyPair {
+func GenerateKeyPair() *KeyPair {
 	priv, x, y, err := elliptic.GenerateKey(curve(), RandomnessSource())
 
 	if err != nil {

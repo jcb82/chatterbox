@@ -46,13 +46,13 @@ import (
 
 // Label for generating a check key from the initial root.
 // Used for verifying the results of a handshake out-of-band.
-const HANDSHAKE_CHECK_LABEL byte = 0x01
+const HANDSHAKE_CHECK_LABEL byte = 0x11
 
 // Label for ratcheting the main chain of keys
-const CHAIN_LABEL = 0x02
+const CHAIN_LABEL = 0x22
 
 // Label for deriving message keys from chain keys.
-const KEY_LABEL = 0x03
+const KEY_LABEL = 0x33
 
 // Chatter represents a chat participant. Each Chatter has a single long-term
 // key Identity, and a map of open sessions with other users (indexed by their
@@ -66,15 +66,15 @@ type Chatter struct {
 // You should not need to modify this, though you can add additional fields
 // if you want to.
 type Session struct {
-	MyDHRatchet      *KeyPair
-	PartnerDHRatchet *PublicKey
-	RootChain        *SymmetricKey
-	SendChain        *SymmetricKey
-	ReceiveChain     *SymmetricKey
-	StaleReceiveKeys map[int]*SymmetricKey
-	SendCounter      int
-	LastUpdate       int
-	ReceiveCounter   int
+	MyDHRatchet       *KeyPair
+	PartnerDHRatchet  *PublicKey
+	RootChain         *SymmetricKey
+	SendChain         *SymmetricKey
+	ReceiveChain      *SymmetricKey
+	CachedReceiveKeys map[int]*SymmetricKey
+	SendCounter       int
+	LastUpdate        int
+	ReceiveCounter    int
 }
 
 // Message represents a message as sent over an untrusted network.
@@ -118,7 +118,7 @@ func (m *Message) EncodeAdditionalData() []byte {
 // You should not need to modify this code.
 func NewChatter() *Chatter {
 	c := new(Chatter)
-	c.Identity = NewKeyPair()
+	c.Identity = GenerateKeyPair()
 	c.Sessions = make(map[PublicKey]*Session)
 	return c
 }
@@ -131,7 +131,9 @@ func (c *Chatter) EndSession(partnerIdentity *PublicKey) error {
 		return errors.New("Don't have that session open to tear down")
 	}
 
-	// TODO: your code here
+	delete(c.Sessions, *partnerIdentity)
+
+	// TODO: your code here to zeroize remaining state
 
 	return nil
 }
@@ -147,7 +149,7 @@ func (c *Chatter) InitiateHandshake(partnerIdentity *PublicKey) (*PublicKey, err
 	}
 
 	c.Sessions[*partnerIdentity] = &Session{
-		StaleReceiveKeys: make(map[int]*SymmetricKey),
+		CachedReceiveKeys: make(map[int]*SymmetricKey),
 		// TODO: your code here
 	}
 
@@ -168,7 +170,7 @@ func (c *Chatter) ReturnHandshake(partnerIdentity,
 	}
 
 	c.Sessions[*partnerIdentity] = &Session{
-		StaleReceiveKeys: make(map[int]*SymmetricKey),
+		CachedReceiveKeys: make(map[int]*SymmetricKey),
 		// TODO: your code here
 	}
 

@@ -18,12 +18,12 @@ import (
 )
 
 func TestKeyGeneration(t *testing.T) {
-	NewKeyPair()
+	GenerateKeyPair()
 }
 
 func TestKeyRandomness(t *testing.T) {
-	kp1 := NewKeyPair()
-	kp2 := NewKeyPair()
+	kp1 := GenerateKeyPair()
+	kp2 := GenerateKeyPair()
 
 	if bytes.Equal(kp1.PublicKey.Fingerprint(), kp2.PublicKey.Fingerprint()) {
 		t.Errorf("Randomness failure, identical keys generated")
@@ -31,9 +31,9 @@ func TestKeyRandomness(t *testing.T) {
 }
 
 func TestDiffieHellman(t *testing.T) {
-	kp1 := NewKeyPair()
-	kp2 := NewKeyPair()
-	kp3 := NewKeyPair()
+	kp1 := GenerateKeyPair()
+	kp2 := GenerateKeyPair()
+	kp3 := GenerateKeyPair()
 
 	b1 := DHCombine(&kp1.PublicKey, &kp2.PrivateKey)
 	b2 := DHCombine(&kp2.PublicKey, &kp1.PrivateKey)
@@ -50,8 +50,8 @@ func TestDiffieHellman(t *testing.T) {
 }
 
 func TestZeroizePrivateKey(t *testing.T) {
-	kp1 := NewKeyPair()
-	kp2 := NewKeyPair()
+	kp1 := GenerateKeyPair()
+	kp2 := GenerateKeyPair()
 
 	b1 := DHCombine(&kp1.PublicKey, &kp2.PrivateKey)
 	kp1.Zeroize()
@@ -61,8 +61,8 @@ func TestZeroizePrivateKey(t *testing.T) {
 		t.Errorf("Diffie-Hellman succeeded with zeroized key")
 	}
 
-	kp1 = NewKeyPair()
-	kp2 = NewKeyPair()
+	kp1 = GenerateKeyPair()
+	kp2 = GenerateKeyPair()
 
 	b1 = DHCombine(&kp1.PublicKey, &kp2.PrivateKey)
 	kp2.Zeroize()
@@ -77,8 +77,8 @@ func TestDHVectors(t *testing.T) {
 
 	SetFixedRandomness(true)
 	defer SetFixedRandomness(false)
-	kp1 := NewKeyPair()
-	kp2 := NewKeyPair()
+	kp1 := GenerateKeyPair()
+	kp2 := GenerateKeyPair()
 
 	expected, _ := hex.DecodeString("662A7AADF862BD776C8FC18B8E9F8E20089714856EE233B3902A591D0D5F2925")
 	if !bytes.Equal(kp1.PrivateKey.Key, expected) {

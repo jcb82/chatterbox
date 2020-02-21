@@ -159,7 +159,7 @@ func TestHandshakeVector(t *testing.T) {
 	aliceShare, _ := alice.InitiateHandshake(&bob.Identity.PublicKey)
 	_, bobCheck, _ := bob.ReturnHandshake(&alice.Identity.PublicKey, aliceShare)
 
-	CheckTestVector(t, bobCheck.Key, "A72EB9D3D4EF6DAF82B44D1D4F44700226AA37437887922EDD2C55682221D2BA", "Handshake check")
+	CheckTestVector(t, bobCheck.Key, "504183E8ACBA0A4A4302EE616DF5878A99D4B57C5AD63D59D2F4E2F254AE952F", "Handshake check")
 }
 
 // CheckSend creates a message from sender to receiver by calling SendMessage
@@ -257,8 +257,8 @@ func TestOneWayChat(t *testing.T) {
 		fmt.Printf("-------------------------------\n\n")
 	}
 
-	for _, m := range []string{"hi Alice!", "you there???", "I miss you ❤️"} {
-		FailOnError(t, CheckSendReceive(t, bob, alice, m))
+	for _, m := range []string{"hi Bob!", "you there???", "I miss you ❤️"} {
+		FailOnError(t, CheckSendReceive(t, alice, bob, m))
 	}
 }
 
@@ -407,11 +407,11 @@ func TestSynchronousChatVector(t *testing.T) {
 	if message.NextDHRatchet == nil {
 		t.Fatal("message.NextDHRatchet not set")
 	}
-	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "EF8D206106A74C26DBC3EB4F8679D3DB", "NextDHRatchet")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
-	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "52D0A0679552808A67C2C5F13A6607CBBFC3FEA30B28", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "C23938174059E27529D506AC295B21E62020389B626E", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, alice, message, "Alice?"))
 
@@ -430,11 +430,11 @@ func TestSynchronousChatVector(t *testing.T) {
 	if message.NextDHRatchet == nil {
 		t.Fatal("message.NextDHRatchet not set")
 	}
-	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "CE0753ABB34AFC0EDC95B3BF72924E20", "NextDHRatchet")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "32F5CB5763B7D3875A3695625FB4F847", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
-	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "00", "LastUpdate")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "D338E92B04DAA4F6C25F6AE3952A8EBB46BF29DE9CDB", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "0C49E654753C68CFEBDE588AEFD10D974906A72BBFB9", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, bob, message, "Bob..."))
 
@@ -464,11 +464,11 @@ func TestSynchronousChatVector(t *testing.T) {
 	if message.NextDHRatchet == nil {
 		t.Fatal("message.NextDHRatchet not set")
 	}
-	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "34FAB4CF6AE3CFB23A9AF2C0ECE3C4E2", "NextDHRatchet")
+	CheckTestVector(t, message.NextDHRatchet.Fingerprint(), "9194DE8B23D5A10C5D5EC9F8CB8D7AAC", "NextDHRatchet")
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
-	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "04", "LastUpdate")
+	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "05", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "8E3E9C653B7DF0CA5613F4DB3ADC895FEA6CEDFDA4C7E3CD31070A", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "41197291A590972C2D498A9FFE32348FBCBB71A8C045A1ED21FEA0", "Ciphertext")
 }
 
 // TestTeardown tests that a session can be ended by calling

@@ -48,11 +48,14 @@ import (
 // Used for verifying the results of a handshake out-of-band.
 const HANDSHAKE_CHECK_LABEL byte = 0x11
 
-// Label for ratcheting the main chain of keys
-const CHAIN_LABEL = 0x22
+// Label for ratcheting the root key after deriving a key chain from it
+const ROOT_LABEL = 0x22
 
-// Label for deriving message keys from chain keys.
-const KEY_LABEL = 0x33
+// Label for ratcheting the main chain of keys
+const CHAIN_LABEL = 0x33
+
+// Label for deriving message keys from chain keys
+const KEY_LABEL = 0x44
 
 // Chatter represents a chat participant. Each Chatter has a single long-term
 // key Identity, and a map of open sessions with other users (indexed by their

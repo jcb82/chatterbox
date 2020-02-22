@@ -411,7 +411,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "C23938174059E27529D506AC295B21E62020389B626E", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "4F63DDB38F9BDE7C067ED81ADA56114C80F3AE77B1B8", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, alice, message, "Alice?"))
 
@@ -434,7 +434,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "0C49E654753C68CFEBDE588AEFD10D974906A72BBFB9", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "0A4BA5F563D378A69AC1F370CEE25238175E0AE89A31", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, bob, message, "Bob..."))
 
@@ -468,7 +468,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "05", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "41197291A590972C2D498A9FFE32348FBCBB71A8C045A1ED21FEA0", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "03EE7F134231F81190F1ACB3F8F0A0326D50A6D84801D8DE362F74", "Ciphertext")
 }
 
 // TestTeardown tests that a session can be ended by calling

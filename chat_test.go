@@ -213,7 +213,7 @@ func CheckReceive(t *testing.T,
 
 	// Check the plaintext is correct, if the target is known.
 	if intendedPlaintext != "" && received != intendedPlaintext {
-		t.Logf("Message not decrypted successfully")
+		t.Fatalf("Message not decrypted successfully")
 		return err
 	}
 	if VERBOSE {
@@ -411,7 +411,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "4F63DDB38F9BDE7C067ED81ADA56114C80F3AE77B1B8", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "A0B5D420923494FFFBCB38CD7BE8E55B37DAF7912AB6", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, alice, message, "Alice?"))
 
@@ -434,7 +434,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "01", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "01", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "0A4BA5F563D378A69AC1F370CEE25238175E0AE89A31", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "6C0D932DC852E34F92B239976FE9759FBB82B041FAE6", "Ciphertext")
 
 	SkipOnError(t, CheckReceive(t, bob, message, "Bob..."))
 
@@ -468,7 +468,7 @@ func TestSynchronousChatVector(t *testing.T) {
 	CheckTestVector(t, []byte{byte(message.Counter)}, "06", "Counter")
 	CheckTestVector(t, []byte{byte(message.LastUpdate)}, "05", "LastUpdate")
 	CheckTestVector(t, message.IV, "0102030405060708090A0B0C", "IV")
-	CheckTestVector(t, message.Ciphertext, "03EE7F134231F81190F1ACB3F8F0A0326D50A6D84801D8DE362F74", "Ciphertext")
+	CheckTestVector(t, message.Ciphertext, "A3BC2406B31F0FA9AA36BB33D3D43F0BE614D5A18C91B2D6D165E3", "Ciphertext")
 }
 
 // TestTeardown tests that a session can be ended by calling

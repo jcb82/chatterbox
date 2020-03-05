@@ -242,7 +242,7 @@ func CheckSendReceive(t *testing.T,
 }
 
 // TestOneWayChat tests a simple conversation where only one party (the
-// responder) sends a series of messages. If any message raises an error
+// initiator) sends a series of messages. If any message raises an error
 // or fails to decrypt, the test fails. If the handshake fails the test
 // is skipped.
 func TestOneWayChat(t *testing.T) {
@@ -263,7 +263,7 @@ func TestOneWayChat(t *testing.T) {
 }
 
 // TestOneWayReverseChat tests a conversation where only one party (the
-// initiator) sends a series of messages. Note that this is slightly
+// responder) sends a series of messages. Note that this is slightly
 // harder to implement since a DH ratchet should happen before the message
 // is sent. If any message raises an error or fails to decrypt, the test fails.
 // If the handshake fails the test is skipped.
@@ -279,8 +279,8 @@ func TestOneWayChatReverse(t *testing.T) {
 		fmt.Printf("-------------------------------\n\n")
 	}
 
-	for _, m := range []string{"Bob!", "sorry my phone died earlier", "I miss you too..."} {
-		FailOnError(t, CheckSendReceive(t, alice, bob, m))
+	for _, m := range []string{"Alice!", "sorry my phone died earlier", "I miss you too..."} {
+		FailOnError(t, CheckSendReceive(t, bob, alice, m))
 	}
 }
 

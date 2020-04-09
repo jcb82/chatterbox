@@ -49,6 +49,42 @@ func TestDiffieHellman(t *testing.T) {
 	}
 }
 
+func TestDHDuplication(t *testing.T) {
+	kp1 := GenerateKeyPair()
+	kp1c := kp1.Duplicate()
+
+	kp2 := GenerateKeyPair()
+	kp2c := kp2.Duplicate()
+
+	b1 := DHCombine(&kp1c.PublicKey, &kp2.PrivateKey)
+	b2 := DHCombine(&kp2c.PublicKey, &kp1.PrivateKey)
+
+	if !bytes.Equal(b1.Key, b2.Key) {
+		t.Errorf("Diffie-Hellman exchange failure with duplicated key. Both sides should agree")
+	}
+
+	b1 = DHCombine(&kp1.PublicKey, &kp2c.PrivateKey)
+	b2 = DHCombine(&kp2.PublicKey, &kp1c.PrivateKey)
+
+	if !bytes.Equal(b1.Key, b2.Key) {
+		t.Errorf("Diffie-Hellman exchange failure with duplicated key. Both sides should agree")
+	}
+
+	b1 = DHCombine(&kp1.PublicKey, kp2c.PrivateKey.Duplicate())
+	b2 = DHCombine(&kp2.PublicKey, kp1c.PrivateKey.Duplicate())
+
+	if !bytes.Equal(b1.Key, b2.Key) {
+		t.Errorf("Diffie-Hellman exchange failure with duplicated key. Both sides should agree")
+	}
+
+	b1 = DHCombine(kp1.PublicKey.Duplicate(), &kp2c.PrivateKey)
+	b2 = DHCombine(kp2.PublicKey.Duplicate(), &kp1c.PrivateKey)
+
+	if !bytes.Equal(b1.Key, b2.Key) {
+		t.Errorf("Diffie-Hellman exchange failure with duplicated key. Both sides should agree")
+	}
+}
+
 func TestZeroizePrivateKey(t *testing.T) {
 	kp1 := GenerateKeyPair()
 	kp2 := GenerateKeyPair()

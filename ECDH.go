@@ -22,6 +22,7 @@ import (
 	"math/big"
 )
 
+const PRIVATE_KEY_LENGTH = 32 // 256-bit keys
 const FINGERPRINT_LENGTH = 16 //128-bit key fingerprints
 
 // Curve in use is NIST-P256
@@ -59,10 +60,12 @@ func GenerateKeyPair() *KeyPair {
 		panic(err)
 	}
 
-	return &KeyPair{
+	r := &KeyPair{
 		PrivateKey: PrivateKey{Key: priv},
 		PublicKey:  PublicKey{X: x, Y: y},
 	}
+
+	return r
 }
 
 // Zeroize overwrites the buffer storing a private key with 0 bytes.
@@ -75,6 +78,40 @@ func (k *PrivateKey) Zeroize() {
 // Zeroize overwrites the buffer storing a private key with 0 bytes.
 func (kp *KeyPair) Zeroize() {
 	kp.PrivateKey.Zeroize()
+}
+
+// Duplicate produces an exact copy of a given key
+func (k *PublicKey) Duplicate() *PublicKey {
+	r := PublicKey{
+		X: new(big.Int),
+		Y: new(big.Int),
+	}
+	r.X.Set(k.X)
+	r.Y.Set(k.Y)
+	return &r
+}
+
+// Duplicate produces an exact copy of a given key
+func (k *PrivateKey) Duplicate() *PrivateKey {
+	r := PrivateKey{
+		Key: make([]byte, PRIVATE_KEY_LENGTH),
+	}
+	copy(r.Key, k.Key)
+
+	return &r
+}
+
+// Duplicate produces an exact copy of a given key
+func (k *KeyPair) Duplicate() *KeyPair {
+	r := KeyPair{
+		PrivateKey: PrivateKey{Key: make([]byte, PRIVATE_KEY_LENGTH)},
+		PublicKey:  PublicKey{X: new(big.Int), Y: new(big.Int)},
+	}
+	copy(r.PrivateKey.Key, k.PrivateKey.Key)
+	r.PublicKey.X.Set(k.PublicKey.X)
+	r.PublicKey.Y.Set(k.PublicKey.Y)
+
+	return &r
 }
 
 // String representation of a public key.
@@ -105,7 +142,8 @@ func DHCombine(publicKey *PublicKey, privateKey *PrivateKey) *SymmetricKey {
 	h := sha256.New()
 	h.Write(elliptic.Marshal(curve(), x, y))
 
-	return &SymmetricKey{
+	r := &SymmetricKey{
 		h.Sum(nil)[:SYMMETRIC_KEY_LENGTH],
 	}
+	return r
 }

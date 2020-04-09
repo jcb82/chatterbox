@@ -46,6 +46,25 @@ func TestEncryptionDecryption(t *testing.T) {
 	}
 }
 
+func TestSymmetricDuplication(t *testing.T) {
+	k1 := NewSymmetricKey()
+
+	plaintext := "test"
+	data := []byte("extra")
+	iv := NewIV()
+	ciphertext := k1.AuthenticatedEncrypt(plaintext, data, iv)
+	k2 := k1.Duplicate()
+	decrypted, err := k2.AuthenticatedDecrypt(ciphertext, data, iv)
+
+	if err != nil {
+		t.Fatal("Decryption of valid ciphertext with duplicated key produced authentication error")
+	}
+
+	if plaintext != decrypted {
+		t.Fatal("Decryption with duplicated key  did not return original message")
+	}
+}
+
 func TestZeroizeSymmetricKey(t *testing.T) {
 	k1 := NewSymmetricKey()
 

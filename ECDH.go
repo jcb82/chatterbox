@@ -44,7 +44,7 @@ type PrivateKey struct {
 	Key []byte
 }
 
-// PrivateKey represents a public key, which is an elliptic curve point.
+// PublicKey represents a public key, which is an elliptic curve point.
 // Represented by two integers X, Y.
 type PublicKey struct {
 	X *big.Int
